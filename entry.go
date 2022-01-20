@@ -58,6 +58,7 @@ func Default(baseEnv environment.Environment) *GinBootEngine {
 		FilePrefix:      env.GetConfig().GetString("server.name"),
 		SaveDay: 		 time.Duration(env.GetConfig().GetInt64("log.saveDay")),
 		ExtLoggerWriter: []io.Writer{os.Stdout},
+		CustomTimeLayout: time.RFC3339,
 	}
 	if env.CurrentEnv() != environment.Dev {
 		lc.ExtLoggerWriter = nil
@@ -90,9 +91,9 @@ func (g *GinBootEngine) StartServer(termCrontabHandle HandleFunc) error {
 		Handler: g.Engine,
 	}
 	go func() {
+		glog.ShareLogger().Infof("server will startup on port %s", port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			println("listen serve error. " + err.Error())
-			os.Exit(1)
+			glog.ShareLogger().Fatalf("listen serve error. %+v", err)
 		}
 	}()
 	// graceful shutdown

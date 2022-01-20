@@ -5,6 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"io"
 	"os"
+	"time"
 )
 
 func InitLogger(logConfig *glog.LoggerOptions) error {
@@ -16,6 +17,7 @@ func InitLogger(logConfig *glog.LoggerOptions) error {
 		lc.FilePrefix = "server"
 		lc.SaveDay = 7
 		lc.ExtLoggerWriter = []io.Writer{os.Stdout}
+		lc.CustomTimeLayout = time.RFC3339
 	} else {
 		lc.MinAllowLevel = logConfig.MinAllowLevel
 		lc.HighPerformance = logConfig.HighPerformance
@@ -23,6 +25,7 @@ func InitLogger(logConfig *glog.LoggerOptions) error {
 		lc.FilePrefix = logConfig.FilePrefix
 		lc.SaveDay = logConfig.SaveDay
 		lc.ExtLoggerWriter = logConfig.ExtLoggerWriter
+		lc.CustomTimeLayout = logConfig.CustomTimeLayout
 	}
 	return glog.InitGlobalLogger(lc)
 }
