@@ -1,20 +1,28 @@
 package gboot
 
 import (
+	"context"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/gin-melodic/gboot/environment"
 	"github.com/gin-melodic/gboot/internal/config"
 	"github.com/gin-melodic/gboot/internal/log"
+	"github.com/gin-melodic/gboot/internal/router"
 	"github.com/gin-melodic/glog"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"io"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
 // GinBootEngine basic config
 type GinBootEngine struct {
 	Env environment.Environment
+	Engine *gin.Engine
 }
 
 // Default create a GinBootEngine instance by common configuration.
@@ -58,6 +66,48 @@ func Default(baseEnv environment.Environment) *GinBootEngine {
 		fmt.Printf("Init logger error. %+v", err)
 		os.Exit(1)
 	}
-
+	r := router.NewRouter(env)
+	g.Engine = r
 	return &g
+}
+
+// HandleFunc use by param
+type HandleFunc func()
+
+// StartServer start gin server with graceful shutdown.
+// The port of server is configured in xxx.yml
+func (g *GinBootEngine) StartServer(termCrontabHandle HandleFunc) error {
+	port := g.Env.GetConfig().GetString("server.port")
+	if port == "" {
+		println("[WARN]Use default port 8888")
+		port = "8888"
+	}
+	if g.Engine == nil {
+		return errors.New("must init engine first.")
+	}
+	srv := &http.Server{
+		Addr: ":" + port,
+		Handler: g.Engine,
+	}
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			println("listen serve error. " + err.Error())
+			os.Exit(1)
+		}
+	}()
+	// graceful shutdown
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		glog.ShareLogger().Fatalf("server forced to shutdown: %s", err)
+	}
+	// stop crontab
+	if termCrontabHandle != nil {
+		termCrontabHandle()
+	}
+	glog.ShareLogger().Infof("server has stopped.")
+	return nil
 }
