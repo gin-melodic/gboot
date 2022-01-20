@@ -1,0 +1,9 @@
+server:
+  name: app
+  port: 8000
+
+log:
+  path: ./log/
+  saveDay: 7
+  # panic, fatal, error, warn, info, debug, trace
+  level: info
