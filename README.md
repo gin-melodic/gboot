@@ -7,6 +7,12 @@ Use this framework to quickly deploy a golang web service that includes:
 - log system with rotation func by [gin-melodic/glog](https://github.com/gin-melodic/glog)
 - configuration parsing func by [spf13/viper](https://github.com/spf13/viper)
 
+## Install
+
+```shell
+go get github.com/gin-melodic/gboot
+```
+
 ## Usage
 
 Before launch `gboot`, you need create the configuration in `config/` dir.
