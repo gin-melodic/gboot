@@ -1,4 +1,4 @@
-package main
+package entry
 
 import (
 	"fmt"
@@ -60,9 +60,4 @@ func Default(baseEnv environment.Environment) *GinBootEngine {
 	}
 
 	return &g
-}
-
-// main only for testing
-func main() {
-	Default(nil)
 }
