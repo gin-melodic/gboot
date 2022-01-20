@@ -1,4 +1,4 @@
-package entry
+package gboot
 
 import (
 	"github.com/stretchr/testify/assert"
