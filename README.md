@@ -7,13 +7,31 @@ Use this framework to quickly deploy a golang web service that includes:
 - log system with rotation func by [gin-melodic/glog](https://github.com/gin-melodic/glog)
 - configuration parsing func by [spf13/viper](https://github.com/spf13/viper)
 
-## Install
+## Install & Usage
+
+### Before All
+
+0. [Install golang and configure golang environment](https://go.dev/doc/install).
+1. Create project folder by `mkdir myApp`
+2. `cd myApp` and execute `go mod init`
+3. Execute below command to install gboot module.
+    ```shell
+    go get github.com/gin-melodic/gboot
+    ```
+
+### Way 1: One-Click Script (RECOMMENDED)
+
+In your project root directory and run:
 
 ```shell
-go get github.com/gin-melodic/gboot
+wget -qO- https://raw.githubusercontent.com/gin-melodic/gboot/main/install.sh | bash
 ```
 
-## Usage
+All required files have been automatically generated!!!
+
+Open your project and start coding~~
+
+### Way 2: Manual
 
 Before launch `gboot`, you need create the configuration in `config/` dir.
 
