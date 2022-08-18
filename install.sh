@@ -45,6 +45,23 @@ else
     echo "config/development.yml already exists, skip!"
 fi
 
+# Create shared config code
+if [ ! -f "./config/shared.go" ]; then
+    echo "Create shared config code"
+    touch ./config/shared.go
+    echo "package config" >> ./config/shared.go
+    echo "" >> ./config/shared.go
+    echo "import \"github.com/spf13/viper\"" >> ./config/shared.go
+    echo "" >> ./config/shared.go
+    echo "var ServerConfig *viper.Viper" >> ./config/shared.go
+    echo "" >> ./config/shared.go
+    echo "func LoadConfig(c *viper.Viper) {" >> ./config/shared.go
+    echo "    ServerConfig = c" >> ./config/shared.go
+    echo "}" >> ./config/shared.go
+else
+    echo "Shared config code exists, skip!"
+fi
+
 # Create main.go
 if [ ! -f "./main.go" ]; then
     echo "Create main.go"
@@ -59,7 +76,12 @@ if [ ! -f "./main.go" ]; then
     echo ")" >> ./main.go
     echo  "" >> ./main.go
     echo "func main() {" >> ./main.go
+    echo "    // check version， replace by shell file 'build.sh'." >> ./main.go
+    echo "    buildDate := \"2022/04/30 14:18:46\"" >> ./main.go
+    echo "    fmt.Printf(\"Build Date: %s\n\", buildDate)" >> ./main.go
+    echo "" >> ./main.go
     echo "    g := gboot.Default(nil)" >> ./main.go
+    echo "    config.LoadConfig(g.Env.GetConfig())" >> ./main.go
     echo "    r := g.Engine.Group(\"/api/v1\")" >> ./main.go
     echo "    {" >> ./main.go
     echo "          r.GET(\"/\", func(c *gin.Context) {" >> ./main.go
@@ -78,6 +100,53 @@ if [ ! -f "./main.go" ]; then
     echo "Created main.go!"
 else
     echo "main.go already exists, skip!"
+fi
+
+# Create build.sh
+if [ ! -f "./build.sh" ]; then
+  echo "Create build.sh"
+  touch ./build.sh
+  # shellcheck disable=SC2129
+  echo "#!/bin/bash" >> ./build.sh
+  echo "" >> ./build.sh
+  echo "# set build date" >> ./build.sh
+  echo "# Notice: The 'sed' command uses the Linux version; " >> ./build.sh
+  echo "if you're using macOS, I recommend installing 'gsed' via 'brew install gsed', then changing the next line command." >> ./build.sh
+  echo 'sed -i "s/buildDate\ \:=\ \".*\"/buildDate\ :=\ \"$(date "+%Y\/%m\/%d\ %H:%M:%S")\"/g" main.go' >> ./build.sh
+  echo "" >> ./build.sh
+  echo "# build" >> ./build.sh
+  echo "# TODO: Change GOOS and GOARCH you want." >> ./build.sh
+  echo "GOOS=linux GOARCH=amd64 go build -v ./" >> ./build.sh
+  chmod +x ./build.sh
+else
+    echo "build.sh already exists, skip!"
+fi
+
+# Create deploy.sh
+if [ ! -f "./deploy.sh" ]; then
+  echo "Create deploy.sh"
+  touch ./deploy.sh
+  # shellcheck disable=SC2129
+  echo "#!/bin/bash" >> ./deploy.sh
+  echo "" >> ./deploy.sh
+  echo "# TODO: change server & user" >> ./deploy.sh
+  echo "rsync -vztHe ssh --progress $APP_NAME user@127.0.0.1:/home/user/$APP_NAME" >> ./deploy.sh
+  chmod +x ./deploy.sh
+else
+    echo "deploy.sh already exists, skip!"
+fi
+
+# Create .gitignore
+if [ ! -f ".gitignore" ]; then
+    echo "Create .gitignore"
+    touch .gitignore
+    # shellcheck disable=SC2129
+    echo "log/" >> .gitignore
+    echo ".idea" >> .gitignore
+    echo "$APP_NAME" >> .gitignore
+    echo "config/*.yml" >> .gitignore
+else
+    echo ".gitignore already exists, skip!"
 fi
 
 echo "Done!"
