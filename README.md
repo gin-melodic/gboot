@@ -1,7 +1,7 @@
 # gboot
-🚀🚀🚀 Rush start a web project with gonic-gin/gin and other convenient tools!!! 🚀🚀🚀
+🚀🚀🚀 Start a web project right away using gonic-gin/gin and other practical tools!!! 🚀🚀🚀
 
-Use this framework to quickly deploy a golang web service that includes:
+Use this framework to easily launch a Golang web service with the following features::
 
 - [gingonic/gin](https://github.com/gin-gonic/gin) web engine & graceful shutdown
 - log system with rotation func by [gin-melodic/glog](https://github.com/gin-melodic/glog)
@@ -12,9 +12,9 @@ Use this framework to quickly deploy a golang web service that includes:
 ### Before All
 
 0. [Install golang and configure golang environment](https://go.dev/doc/install).
-1. Create project folder by `mkdir myApp`
+1. Create a project folder by `mkdir myApp`
 2. `cd myApp` and execute `go mod init`
-3. Execute below command to install gboot module.
+3. Execute below command to install the gboot module.
     ```shell
     go get github.com/gin-melodic/gboot
     ```
@@ -27,15 +27,15 @@ In your project root directory and run:
 wget -qO- https://raw.githubusercontent.com/gin-melodic/gboot/main/install.sh | bash
 ```
 
-All required files have been automatically generated!!!
+The associated files have all been automatically created.!!!
 
-Open your project and start coding~~
+Launch your project, then begin coding~~
 
 ### Way 2: Manual
 
-Before launch `gboot`, you need create the configuration in `config/` dir.
+You need generate the configuration in the `config/` directory before running `gboot`.
 
-Configuration files distinguish environments by filename, e.g. `development.yml`, `production.yml`.
+Environments are defined in configuration files by their filenames, such as `production.yml` and `development.yml`.
 
 A simple `development.yml` look like:
 
@@ -51,9 +51,9 @@ log:
   level: info
 ```
 
-**The key-value pairs in the sample configuration file must be included, otherwise the service cannot be started.**
+**The service cannot be launched unless the key-value pairs from the configuration file are present.**
 
-Then you can start server in your `main.go`:
+Then you can launch http server in `main.go`:
 
 ```go
 package main
@@ -118,7 +118,7 @@ func main() {
 }
 ```
 
-When the service is started, check the project's log folder or console, you will find something like below:
+Check the project's log folder or console when the service is launched; you should see something similar to the following.
 
 ```
 [GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
