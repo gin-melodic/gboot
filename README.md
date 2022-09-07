@@ -1,7 +1,7 @@
 # gboot
 🚀🚀🚀 Start a web project right away using gonic-gin/gin and other practical tools!!! 🚀🚀🚀
 
-Use this framework to easily launch a Golang web service with the following features::
+Use this framework to easily launch a Golang web service with the following features:
 
 - [gingonic/gin](https://github.com/gin-gonic/gin) web engine & graceful shutdown
 - log system with rotation func by [gin-melodic/glog](https://github.com/gin-melodic/glog)
@@ -19,7 +19,7 @@ Use this framework to easily launch a Golang web service with the following feat
     go get github.com/gin-melodic/gboot
     ```
 
-### Way 1: One-Click Script (RECOMMENDED)
+### Method A: One-Click Script (RECOMMENDED)
 
 In your project root directory and run:
 
@@ -31,7 +31,7 @@ The associated files have all been automatically created.!!!
 
 Launch your project, then begin coding~~
 
-### Way 2: Manual
+### Method B: Manual
 
 You need generate the configuration in the `config/` directory before running `gboot`.
 
