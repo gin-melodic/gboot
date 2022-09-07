@@ -14,13 +14,33 @@ limitations under the License.
 package gboot
 
 import (
+	"github.com/gin-gonic/gin"
+	"github.com/gin-melodic/glog"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
+	"time"
 )
 
 func TestDefault(t *testing.T) {
 	g := Default(nil)
 	assert.NotNil(t, g)
-	err := g.StartServer(nil)
+
+	g.Engine.Handle("GET", "/test", func(ctx *gin.Context) {
+		ctx.String(200, "test")
+	})
+
+	go func() {
+		time.Sleep(2 * time.Second)
+
+		println("Stop server")
+		g.QuitChan <- os.Interrupt
+	}()
+
+	err := g.StartServer(func() {
+		glog.ShareLogger().Info("Start clear log")
+		assert.NoErrorf(t, glog.ShareLogger().Close(), "close logger error")
+		assert.NoErrorf(t, os.RemoveAll("./log"), "delete log files error")
+	})
 	assert.Nil(t, err)
 }

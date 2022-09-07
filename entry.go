@@ -34,8 +34,12 @@ import (
 
 // GinBootEngine basic config
 type GinBootEngine struct {
-	Env environment.Environment
+	Env    environment.Environment
 	Engine *gin.Engine
+	Server *http.Server
+	// QuitChan In some cases, you need to stop the server by yourself(e.g. unit test). You can use this channel to stop the server, like this:
+	// g.QuitChan <- os.Interrupt
+	QuitChan chan os.Signal
 }
 
 // Default create a GinBootEngine instance by common configuration.
@@ -65,12 +69,12 @@ func Default(baseEnv environment.Environment) *GinBootEngine {
 		level = logrus.InfoLevel
 	}
 	lc := &glog.LoggerOptions{
-		MinAllowLevel:   level,
-		HighPerformance: false,
-		OutputDir:       env.GetConfig().GetString("log.path"),
-		FilePrefix:      env.GetConfig().GetString("server.name"),
-		SaveDay: 		 time.Duration(env.GetConfig().GetInt64("log.saveDay")),
-		ExtLoggerWriter: []io.Writer{os.Stdout},
+		MinAllowLevel:    level,
+		HighPerformance:  false,
+		OutputDir:        env.GetConfig().GetString("log.path"),
+		FilePrefix:       env.GetConfig().GetString("server.name"),
+		SaveDay:          time.Duration(env.GetConfig().GetInt64("log.saveDay")),
+		ExtLoggerWriter:  []io.Writer{os.Stdout},
 		CustomTimeLayout: time.RFC3339,
 	}
 	if env.CurrentEnv() != environment.Dev {
@@ -100,9 +104,10 @@ func (g *GinBootEngine) StartServer(termCrontabHandle HandleFunc) error {
 		return errors.New("must init engine first.")
 	}
 	srv := &http.Server{
-		Addr: ":" + port,
+		Addr:    ":" + port,
 		Handler: g.Engine,
 	}
+	g.Server = srv
 	go func() {
 		glog.ShareLogger().Infof("server will startup on port %s", port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -112,16 +117,18 @@ func (g *GinBootEngine) StartServer(termCrontabHandle HandleFunc) error {
 	// graceful shutdown
 	quit := make(chan os.Signal)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	g.QuitChan = quit
 	<-quit
-	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
 		glog.ShareLogger().Fatalf("server forced to shutdown: %s", err)
 	}
+	glog.ShareLogger().Infof("http server exited, deal with term crontab...")
 	// stop crontab
 	if termCrontabHandle != nil {
 		termCrontabHandle()
 	}
-	glog.ShareLogger().Infof("server has stopped.")
+	println("server exited.")
 	return nil
 }
