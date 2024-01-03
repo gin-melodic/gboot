@@ -37,7 +37,8 @@ type GinBootEngine struct {
 	Env    environment.Environment
 	Engine *gin.Engine
 	Server *http.Server
-	// QuitChan In some cases, you need to stop the server by yourself(e.g. unit test). You can use this channel to stop the server, like this:
+	// QuitChan In some cases, you need to stop the server by yourself(e.g. unit test).
+	// You can use this channel to stop the server, like this:
 	// g.QuitChan <- os.Interrupt
 	QuitChan chan os.Signal
 }
