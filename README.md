@@ -1,4 +1,7 @@
 # gboot
+
+[![Go](https://github.com/gin-melodic/gboot/actions/workflows/go.yml/badge.svg)](https://github.com/gin-melodic/gboot/actions/workflows/go.yml)
+
 🚀🚀🚀 Start a web project right away using gonic-gin/gin and other practical tools!!! 🚀🚀🚀
 
 Use this framework to easily launch a Golang web service with the following features:
@@ -13,124 +16,32 @@ Use this framework to easily launch a Golang web service with the following feat
 
 0. [Install golang and configure golang environment](https://go.dev/doc/install).
 1. Create a project folder by `mkdir myApp`
-2. `cd myApp` and execute `go mod init`
-3. Execute below command to install the gboot module.
-    ```shell
-    go get github.com/gin-melodic/gboot
-    ```
+2. `cd myApp`
 
-### Method A: One-Click Script (RECOMMENDED)
+### One-Click Script
 
 In your project root directory and run:
 
 ```shell
-wget -qO- https://raw.githubusercontent.com/gin-melodic/gboot/main/install.sh | bash
+wget https://raw.githubusercontent.com/gin-melodic/gboot/dev/install.sh && bash install.sh && rm install.sh
 ```
 
-The associated files have all been automatically created.!!!
+> Since the script needs to be an interactive shell, it cannot be executed using the previous wget -qO- with pipeline
 
-Launch your project, then begin coding~~
+The script will provide options that dynamically affect the code that creates the item.
 
-### Method B: Manual
+These options are:
 
-You need generate the configuration in the `config/` directory before running `gboot`.
+1. `project name` Get the name of the current folder as the project name by default.
+2. `author name` The default value **anonymous** is actually meaningless and is highly recommended to be changed. One suggestion is to use your github username, which together with `project name` will form project address on github like `https://github.com/<author>/<project>`.
+3. `use one-click installation` If this option is **Y**, then all subsequent questions will be skipped and the created project will use *8000* as the listening port, *'./log/'* as the directory for the log files, the log file rotation is set to *7* days, and the script will generate sample code for connecting to the database.
+4. `project port` Set the service listening port in the configuration file.
+5. `log save path` Set the log files saving path in the configuration file.
+6. `log overwrite days` Set the log file rotation time in the configuration file.
+7. `database demo code` If this option is **Y**, the script will generate sample code for connecting to the database. It's worth noting that the generated database connection initialisation code uses a [glogger](https://github.com/gin-melodic/glog) I wrote as the SQL execution print handle, which is particularly nice to have when Debugging.
 
-Environments are defined in configuration files by their filenames, such as `production.yml` and `development.yml`.
+In addition to the service code itself, the script generates a powerful [Makefile](https://www.gnu.org/software/make/manual/make.html) for compiling and packaging the service. You can add more customisation to this makefile.
 
-A simple `development.yml` look like:
+### Demo video
 
-```yaml
-server:
-  name: app
-  port: 8000
-
-log:
-  path: ./log/
-  saveDay: 7
-  # panic, fatal, error, warn, info, debug, trace
-  level: info
-```
-
-**The service cannot be launched unless the key-value pairs from the configuration file are present.**
-
-Then you can launch http server in `main.go`:
-
-```go
-package main
-
-import (
-	"github.com/gin-gonic/gin"
-	"github.com/gin-melodic/gboot"
-	"github.com/gin-melodic/glog"
-	"net/http"
-	"time"
-)
-
-// PingController test controller
-type PingController struct {}
-
-// Ping get ping request
-func (p *PingController) Ping(c *gin.Context) {
-	glog.ShareLogger().Infof("get 'ping' request.")
-	c.JSON(200, map[string]interface{}{
-		"result": "ok",
-		"busCode": "1000",
-	})
-}
-
-func main() {
-  // Be careful! You can't use glog.shareLogger before gboot init, the app will panic!!!
-  // init gboot instance
-	g := gboot.Default(nil)
-  // Note: now you can use glog.shareLogger after gboot init.
-
-  // make server root
-	r := g.Engine.Group("/api/v1")
-	{
-		tc := &PingController{}
-    // listen 'ping' request
-		r.GET("ping", tc.Ping)
-	}
-
-	// Test area
-	go func() {
-    // Wait 5 second, then send GET request
-		time.Sleep(5 * time.Second)
-		glog.ShareLogger().Infof("send test request")
-    // The port of '8000' configured in config/development.yml
-		resp, err := http.Get("http://127.0.0.1:8000/api/v1/ping")
-		if err != nil {
-			glog.ShareLogger().Error(err)
-			return
-		}
-		glog.ShareLogger().Infof("get %+v", resp)
-	}()
-  // Test area end
-
-  // Test log, now you can find log in stdout & ./log/
-	glog.ShareLogger().Infof("test")
-
-  // Start server
-	if err := g.StartServer(nil); err != nil {
-		glog.ShareLogger().Fatalf(err.Error())
-	}
-  // !!!!Dead zone, code in here won't execuate.
-}
-```
-
-Check the project's log folder or console when the service is launched; you should see something similar to the following.
-
-```
-[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
- - using env:   export GIN_MODE=release
- - using code:  gin.SetMode(gin.ReleaseMode)
-
-[GIN-debug] GET    /api/v1/ping              --> gboot-example/router.(*PingController).Ping-fm (3 handlers)
-2022-01-20T23:52:36+08:00 [PID:1][main.go:31][INFO]test
-2022-01-20T23:52:36+08:00 [PID:21][entry.go:94][INFO]server will startup on port 8000
-2022-01-20T23:52:41+08:00 [PID:20][main.go:22][INFO]send test request
-2022-01-20T23:52:41+08:00 [PID:50][gin-gonic.go:97][INFO]REQ -> |       127.0.0.1 | GET /api/v1/ping | [EMPTY QUERY] |  
-2022-01-20T23:52:41+08:00 [PID:50][controller.go:11][INFO]get 'ping' request.
-2022-01-20T23:52:41+08:00 [PID:50][gin-gonic.go:125][INFO]<- RESP |       127.0.0.1 | 200 |     508.811µs | GET /api/v1/ping |  {"busCode":"1000","result":"ok"}
-2022-01-20T23:52:41+08:00 [PID:20][main.go:28][INFO]get &{Status:200 OK StatusCode:200 Proto:HTTP/1.1 ProtoMajor:1 ProtoMinor:1 Header:map[Content-Length:[32] Content-Type:[application/json; charset=utf-8] Date:[Thu, 20 Jan 2022 15:52:41 GMT]] Body:0xc00009e140 ContentLength:32 TransferEncoding:[] Close:false Uncompressed:false Trailer:map[] Request:0xc000242b00 TLS:<nil>}
-```
+![demo video](https://mirror.ghproxy.com/https://raw.githubusercontent.com/gin-melodic/pub-res/main/gboot-demo.mp4)

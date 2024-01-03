@@ -150,8 +150,6 @@ then
 "
 fi
 
-
-
 # Create main.go
 write_file "$MAIN_GO" \
 "package main
@@ -197,7 +195,7 @@ func main() {
 
 # Create Makefile
 write_file "$MAKEFILE" \
-".PHONY: build build-windows build-linux build-linux-amd64 build-linux-arm64 build-macos build-macos-amd64 build-macos-arm64 package-prepare package debug debug-server-headless clean deploy
+".PHONY: build build-windows build-linux build-linux-amd64 build-linux-arm64 build-macos build-macos-amd64 build-macos-arm64 package-prepare package debug-server-headless clean deploy
 
 ROOT := \$(dir \$(abspath \$(lastword \$(MAKEFILE_LIST))))
 APP_NAME := \$(shell basename \"\$(PWD)\")
@@ -238,6 +236,10 @@ DELVE=dlv
 LDFLAGS += -X \"main.BuildDate=\$(BUILD_DATE)\"
 LDFLAGS += -X \"main.BuildNumber=\$(BUILD_NUMBER)\"
 LDFLAGS += -X \"main.BuildHash=\$(BUILD_COMMIT)\"
+
+debug-server-headless:
+	\$(DELVE) debug --headless --listen=:2345 --api-version=2 --build-flags=\"-ldflags='\$(LDFLAGS)'\" 
+
 
 # Output paths
 DIST_ROOT=dist
