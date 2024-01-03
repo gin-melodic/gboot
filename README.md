@@ -23,7 +23,7 @@ Use this framework to easily launch a Golang web service with the following feat
 In your project root directory and run:
 
 ```shell
-wget https://raw.githubusercontent.com/gin-melodic/gboot/dev/install.sh && bash install.sh && rm install.sh
+wget https://raw.githubusercontent.com/gin-melodic/gboot/main/install.sh && bash install.sh && rm install.sh
 ```
 
 > Since the script needs to be an interactive shell, it cannot be executed using the previous wget -qO- with pipeline
