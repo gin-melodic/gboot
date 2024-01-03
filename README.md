@@ -44,4 +44,6 @@ In addition to the service code itself, the script generates a powerful [Makefil
 
 ### Demo video
 
-![demo video](https://mirror.ghproxy.com/https://raw.githubusercontent.com/gin-melodic/pub-res/main/gboot-demo.mp4)
+
+https://github.com/gin-melodic/gboot/assets/4485145/057ecfec-1c22-4910-b8a4-7deafd05eec2
+
