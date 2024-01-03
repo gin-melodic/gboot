@@ -99,6 +99,10 @@ MAKEFILE="./Makefile"
 GITIGNORE="./.gitignore"
 GOMODFILE="./go.mod"
 
+DEMO_DB_DIR="./db"
+DEMO_DB_INIT_FILE="$DEMO_DB_DIR/init.go"
+DEMO_DB_MODEL_FILE="$DEMO_DB_DIR/model.go"
+
 echo "Prepare to create app: $APP_NAME"
 
 # Create config dir
@@ -135,6 +139,19 @@ func LoadConfig(c *viper.Viper) {
     ServerConfig = c
 }"
 
+DB_DEMO_CODE_IN_MAIN_GO=""
+if [[ $create_db_demo =~ ^[Yy]$ ]]
+then
+  DB_DEMO_CODE_IN_MAIN_GO="
+  // TODO: check the db.dsn in config/development.yml or config/production.yml, then uncomment the following line
+  // DB demo code
+  // db.GetHandle()
+
+"
+fi
+
+
+
 # Create main.go
 write_file "$MAIN_GO" \
 "package main
@@ -160,6 +177,7 @@ func main() {
     fmt.Println(\"BuildNumber: \", BuildNumber)
     fmt.Println(\"BuildHash: \", BuildHash)
 
+    $DB_DEMO_CODE_IN_MAIN_GO
     g := gboot.Default(nil)
     config.LoadConfig(g.Env.GetConfig())
     r := g.Engine.Group(\"/api/v1\")
@@ -386,6 +404,70 @@ config/*.yml
 # Go workspace file
 go.work
 "
+
+# Create db demo code if $create_db_demo is Y or y
+if [[ $create_db_demo =~ ^[Yy]$ ]]
+then
+  # Create db dir
+    create_dir "$DEMO_DB_DIR"
+
+    # Create db/init.go
+    write_file "$DEMO_DB_INIT_FILE" \
+"package db
+
+import (
+	\"$module_name/config\"
+	\"github.com/gin-melodic/glog\"
+	gormLogger \"github.com/gin-melodic/glog/middleware/gorm\"
+	\"gorm.io/driver/postgres\"
+	\"gorm.io/gorm\"
+)
+
+var handle *gorm.DB
+
+// GetHandle return a gorm.DB instance
+// Note: This demo only support postgresql, you can change the driver in db/init.go.
+func GetHandle() *gorm.DB {
+	if handle == nil {
+		// TODO: check the db.dsn in config/development.yml or config/production.yml, then uncomment the following line
+		// connect()
+	}
+	return handle
+}
+
+func connect() {
+	dsn := config.ServerConfig.GetString(\"db.dsn\")
+	if dsn == \"\" {
+		glog.ShareLogger().Panic(\"db.dsn is empty\")
+	}
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		DSN: dsn,
+	}), &gorm.Config{
+		Logger: gormLogger.New(gormLogger.Options{}),
+	})
+	if err != nil {
+		glog.ShareLogger().Panicf(\"connect to db error: %s\", err.Error())
+	}
+	// TODO: AutoMigrate support, please define orm struct first
+	if err := db.AutoMigrate(&User{}); err != nil {
+		glog.ShareLogger().Errorf(\"auto migrate error: %s\", err.Error())
+	}
+	handle = db
+}"
+
+    # Create db/model.go
+    write_file "$DEMO_DB_MODEL_FILE" \
+"package db
+
+import \"gorm.io/gorm\"
+
+// User define a orm struct, only for demo
+type User struct {
+	gorm.Model
+	Name string \`gorm:\"type:varchar(255);not null\"\`
+}"
+
+fi
 
 # go.mod
 write_file "$GOMODFILE" \
